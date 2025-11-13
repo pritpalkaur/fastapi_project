@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from db import get_connection
 from models import Product
 from pydantic import BaseModel
@@ -16,7 +16,16 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-app = FastAPI()
+app = FastAPI(
+    title="Products API",
+    description="API to manage products in SQL Server",
+    version="1.0.0",
+    contact={
+        "name": "pritpalkaur",
+        "email": "pritpal@example.com"
+    }
+)
+
 
 @app.get("/")
 def read_root():
@@ -26,7 +35,7 @@ def read_root():
 def get_anime(title: str):
     return {"title": title, "status": "searching..."}
 
-@app.get("/products")
+@app.get("/products", tags=["Products"])
 def get_products():
     try:
         conn = get_connection()
@@ -45,7 +54,10 @@ def get_products():
         logging.error(f"Error fetching products: {e}")
         return {"error": "Failed to fetch products"}
 
-@app.post("/products")
+@app.post("/products",   tags=["Products"], summary="Create a new product",response_description="The created product",
+    status_code=status.HTTP_201_CREATED
+)
+
 def create_product(product: Product):
     try:
         conn = get_connection()
