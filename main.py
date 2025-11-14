@@ -2,6 +2,11 @@ from fastapi import FastAPI, status
 from db import get_connection
 from models import Product
 from pydantic import BaseModel
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from auth import create_access_token, verify_token
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class Product(BaseModel):
     Name: str
@@ -19,21 +24,27 @@ logging.basicConfig(
 app = FastAPI(
     title="Products API",
     description="API to manage products in SQL Server",
-    version="1.0.0",
+    version="2.0.0",
     contact={
         "name": "pritpalkaur",
         "email": "pritpal@example.com"
     }
 )
+@app.post("/token")
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    print("Received:", form_data.username, form_data.password)
+    if form_data.username == "admin" and form_data.password == "secret":
+        access_token = create_access_token(data={"sub": form_data.username})
+        return {"access_token": access_token, "token_type": "bearer"}
+    raise HTTPException(status_code=401, detail="Invalid credentials")
 
+@app.get("/secure-products")
+def secure_products(token: str = Depends(oauth2_scheme)):
+    user = verify_token(token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return {"message": f"Hello {user['sub']}, here are your products"}
 
-@app.get("/")
-def read_root():
-    return {"message": "Hello, FastAPI!"}
-
-@app.get("/anime/{title}")
-def get_anime(title: str):
-    return {"title": title, "status": "searching..."}
 
 @app.get("/products", tags=["Products"])
 def get_products():
