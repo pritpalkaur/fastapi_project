@@ -21,3 +21,14 @@ A secure and scalable FastAPI backend for managing products in SQL Server. Inclu
 ```bash
 git clone https://github.com/yourusername/fastapi_project.git
 cd fastapi_project
+
+###**how to run**
+python -m venv venv
+.\venv\Scripts\activate
+-----------------------------------------------------
+pip install -r requirements.txt
+ pip install fastapi uvicorn python-jose[cryptography] python-multipart pyodbc
+--------------------------------------------------
+Run locally
+uvicorn main:app --reload
+ 
