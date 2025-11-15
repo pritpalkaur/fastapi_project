@@ -1,4 +1,5 @@
 from fastapi import FastAPI, status
+from fastapi.middleware.cors import CORSMiddleware
 from db import get_connection
 from models import Product
 from pydantic import BaseModel
@@ -20,7 +21,7 @@ logging.basicConfig(
     level=logging.ERROR,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
+# Allow requests from your frontend
 app = FastAPI(
     title="Products API",
     description="API to manage products in SQL Server",
@@ -30,6 +31,15 @@ app = FastAPI(
         "email": "pritpal@example.com"
     }
 )
+# Allow requests from your frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # ✅ React dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.post("/token")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
     print("Received:", form_data.username, form_data.password)
